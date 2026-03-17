@@ -45,6 +45,24 @@ config MAVWRAP_TRANSPORT_UART
 	help
 	  Enable UART transport for MAVLink communication.
 
+config MAVWRAP_TRANSPORT_LORA
+	bool "LoRa Transport Support"
+	depends on LORA
+	help
+	  Enable LoRa transport for MAVLink communication.
+
+if MAVWRAP_TRANSPORT_LORA
+
+config MAVWRAP_LORA_TX_TIMEOUT_MS
+	int "LoRa TX Timeout (ms)"
+	default 5000
+	range 1000 30000
+	help
+	  Timeout for blocking lora_send(). LoRa airtime can be
+	  several seconds at high spreading factors (SF11/SF12).
+
+endif # MAVWRAP_TRANSPORT_LORA
+
 config MAVWRAP_TRANSPORT_NETIF
 	bool "Network Transport Support"
 	depends on NETWORKING
@@ -79,14 +97,6 @@ config MAVWRAP_RX_RING_SIZE
 	  Size of the RX ring buffer in bytes.
 	  Increase if you experience buffer overflows with high-rate messages.
 
-config MAVWRAP_UART_DMA_RX_BUF_SIZE
-	int "UART DMA RX Buffer Size"
-	default 512
-	range 128 2048
-	depends on MAVWRAP_TRANSPORT_UART && UART_ASYNC_API
-	help
-	  Size of each UART DMA RX buffer (double buffered).
-
 if MAVWRAP_TRANSPORT_UART
 
 config MAVWRAP_UART_TX_TIMEOUT_MS
@@ -97,14 +107,24 @@ config MAVWRAP_UART_TX_TIMEOUT_MS
 	  Timeout in milliseconds for UART transmission.
 	  Applies to both DMA and IRQ modes.
 
+if UART_ASYNC_API
+
+config MAVWRAP_UART_DMA_RX_BUF_SIZE
+	int "UART DMA RX Buffer Size"
+	default 512
+	range 128 2048
+	help
+	  Size of each UART DMA RX buffer (double buffered).
+
 config MAVWRAP_UART_RX_TIMEOUT_MS
 	int "UART RX Timeout (ms)"
 	default 100
 	range 10 1000
-	depends on UART_ASYNC_API
 	help
 	  Timeout in milliseconds for UART async RX mode.
 	  Used for flushing partial packets.
+
+endif # UART_ASYNC_API
 
 config MAVWRAP_UART_IRQ_RX_BUF_SIZE
 	int "UART IRQ RX Buffer Size"
@@ -154,11 +174,11 @@ endif # MAVWRAP_TX_THREAD
 
 config MAVWRAP_INIT_PRIORITY
 	int "Initialization Priority"
-	default 80
+	default 95
 	range 1 99
 	help
 	  Initialization priority for MAVLink wrapper devices.
-	  Must be initialized after network subsystem.
+	  Must be greater than LORA_INIT_PRIORITY (90) and SPI_INIT_PRIORITY.
 
 if MAVWRAP_TRANSPORT_NETIF
 

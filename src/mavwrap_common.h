@@ -44,6 +44,10 @@ typedef void (*mavwrap_transport_rx_cb_t)(const struct device *dev,
 #include "mavwrap_netif.h"
 #endif
 
+#ifdef CONFIG_MAVWRAP_TRANSPORT_LORA
+#include "mavwrap_lora.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,6 +73,7 @@ struct mavwrap_transport_ops {
 enum mavwrap_transport_type {
 	MAVWRAP_TRANSPORT_UART,
 	MAVWRAP_TRANSPORT_NETIF,
+	MAVWRAP_TRANSPORT_LORA,
 	MAVWRAP_TRANSPORT_UNKNOWN,
 };
 

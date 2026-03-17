@@ -64,6 +64,12 @@ enum mavwrap_property_type {
 	
 	/* UART properties (future) */
 	MAVWRAP_PROPERTY_UART_BAUDRATE,      /**< UART baudrate (uint32_t) */
+
+	/* LoRa properties */
+	MAVWRAP_PROPERTY_LORA_FREQUENCY,     /**< Center frequency in Hz (uint32_t) */
+	MAVWRAP_PROPERTY_LORA_TX_POWER,      /**< TX power in dBm (uint32_t, cast to int8_t) */
+	MAVWRAP_PROPERTY_LORA_BANDWIDTH,     /**< Bandwidth in kHz: 125, 250, 500 (uint32_t) */
+	MAVWRAP_PROPERTY_LORA_DATARATE,      /**< Spreading factor 5..12 (uint32_t) */
 };
 
 /**

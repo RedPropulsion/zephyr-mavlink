@@ -32,6 +32,11 @@ properties:
       Indicates if this MAVLink instance uses network transport.
       If true, network configuration properties are required.
       Mutually exclusive with serial-interface.
+    
+  lora-interface:
+    type: boolean
+    description: |
+      Indicates if this MAVLink instance uses lora transport.
 
   net-type:
     type: string
@@ -80,3 +85,49 @@ properties:
       Remote port for network transport.
       For UDP: the destination port for sent packets.
       Default: 14551
+
+  lora-frequency:
+    type: int
+    description: |
+      LoRa center frequency in Hz.
+      Example: 868000000 (868 MHz), 915000000 (915 MHz)
+
+  lora-bandwidth:
+    type: int
+    enum:
+      - 125
+      - 250
+      - 500
+    description: |
+      LoRa signal bandwidth in kHz.
+      Default: 125
+
+  lora-spreading-factor:
+    type: int
+    description: |
+      LoRa spreading factor (6..12).
+      Higher SF = longer range, lower data rate, longer airtime.
+
+  lora-coding-rate:
+    type: int
+    enum:
+      - 5
+      - 6
+      - 7
+      - 8
+    description: |
+      LoRa coding rate denominator: 5=4/5, 6=4/6, 7=4/7, 8=4/8.
+      Default: 5 (4/5)
+
+  lora-tx-power:
+    type: int
+    description: |
+      LoRa TX power in dBm.
+      Valid range depends on hardware (typically 2..20 dBm for SX1276).
+
+  lora-preamble-length:
+    type: int
+    default: 8
+    description: |
+      LoRa preamble length in symbols.
+      Default: 8

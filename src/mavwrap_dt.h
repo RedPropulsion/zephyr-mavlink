@@ -31,6 +31,11 @@ extern "C" {
 	DT_PROP_OR(DT_DRV_INST(inst), serial_interface, 0)
 
 
+/* LoRa interface check */
+#define MAVWRAP_HAS_LORA(inst) \
+	DT_PROP_OR(DT_DRV_INST(inst), lora_interface, 0)
+
+
 /* Transport device */
 #define MAVWRAP_TRANSPORT_DEV(inst) \
 	DEVICE_DT_GET(MAVWRAP_TRANSPORT_NODE(inst))
@@ -45,7 +50,13 @@ extern "C" {
 			COND_CODE_1( \
 				MAVWRAP_HAS_NETIF(inst), \
 				(MAVWRAP_TRANSPORT_NETIF), \
-				(MAVWRAP_TRANSPORT_UNKNOWN) \
+				( \
+					COND_CODE_1( \
+						MAVWRAP_HAS_LORA(inst), \
+						(MAVWRAP_TRANSPORT_LORA), \
+						(MAVWRAP_TRANSPORT_UNKNOWN) \
+					) \
+				) \
 			) \
 		) \
 	)
@@ -60,6 +71,10 @@ extern const struct mavwrap_transport_ops mavwrap_uart_ops;
 extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 #endif
 
+#if CONFIG_MAVWRAP_TRANSPORT_LORA
+extern const struct mavwrap_transport_ops mavwrap_lora_ops;
+#endif
+
 
 /* Transport ops */
 #define MAVWRAP_TRANSPORT_OPS(inst) \
@@ -70,7 +85,13 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 			COND_CODE_1( \
 				MAVWRAP_HAS_NETIF(inst), \
 				(&mavwrap_netif_ops), \
-				(NULL) \
+				( \
+					COND_CODE_1( \
+						MAVWRAP_HAS_LORA(inst), \
+						(&mavwrap_lora_ops), \
+						(NULL) \
+					) \
+				) \
 			) \
 		) \
 	)
@@ -94,6 +115,39 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 
 #define MAVWRAP_NETIF_TYPE(inst) \
 	((enum mavwrap_net_type)DT_ENUM_IDX_OR(DT_DRV_INST(inst), net_type, 0))
+
+
+/* LoRa configuration macros */
+#define MAVWRAP_LORA_FREQUENCY(inst) \
+	DT_PROP(DT_DRV_INST(inst), lora_frequency)
+
+#define MAVWRAP_LORA_BANDWIDTH(inst) \
+	DT_PROP_OR(DT_DRV_INST(inst), lora_bandwidth, 125)
+
+#define MAVWRAP_LORA_DATARATE(inst) \
+	DT_PROP(DT_DRV_INST(inst), lora_spreading_factor)
+
+#define MAVWRAP_LORA_CODING_RATE(inst) \
+	DT_PROP_OR(DT_DRV_INST(inst), lora_coding_rate, 5)
+
+#define MAVWRAP_LORA_TX_POWER(inst) \
+	DT_PROP(DT_DRV_INST(inst), lora_tx_power)
+
+#define MAVWRAP_LORA_PREAMBLE_LEN(inst) \
+	DT_PROP_OR(DT_DRV_INST(inst), lora_preamble_length, 8)
+
+
+/* LoRa config initialization */
+#define MAVWRAP_LORA_CONFIG_INIT(inst) \
+	{ \
+		.frequency    = MAVWRAP_LORA_FREQUENCY(inst), \
+		.bandwidth    = MAVWRAP_LORA_BANDWIDTH(inst), \
+		.datarate     = MAVWRAP_LORA_DATARATE(inst), \
+		.coding_rate  = MAVWRAP_LORA_CODING_RATE(inst), \
+		.tx_power     = MAVWRAP_LORA_TX_POWER(inst), \
+		.preamble_len = MAVWRAP_LORA_PREAMBLE_LEN(inst), \
+		.public_network = false, \
+	}
 
 
 /* UART config initialization */
@@ -120,7 +174,9 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 		(static struct mavwrap_uart_data mavwrap_uart_data_##inst = {0};), \
 		(COND_CODE_1(MAVWRAP_HAS_NETIF(inst), \
 			(static struct mavwrap_netif_data mavwrap_netif_data_##inst = {0};), \
-			())))
+			(COND_CODE_1(MAVWRAP_HAS_LORA(inst), \
+				(static struct mavwrap_lora_data mavwrap_lora_data_##inst = {0};), \
+				())))))
 
 
 /* Get pointer to transport data */
@@ -129,7 +185,9 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 		(&mavwrap_uart_data_##inst), \
 		(COND_CODE_1(MAVWRAP_HAS_NETIF(inst), \
 			(&mavwrap_netif_data_##inst), \
-			(NULL))))
+			(COND_CODE_1(MAVWRAP_HAS_LORA(inst), \
+				(&mavwrap_lora_data_##inst), \
+				(NULL))))))
 
 
 /* Define transport-specific config structures (statically allocated) */
@@ -140,7 +198,10 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 		(COND_CODE_1(MAVWRAP_HAS_NETIF(inst), \
 			(static const struct mavwrap_netif_config mavwrap_netif_cfg_##inst = \
 				MAVWRAP_NETIF_CONFIG_INIT(inst);), \
-			())))
+			(COND_CODE_1(MAVWRAP_HAS_LORA(inst), \
+				(static const struct mavwrap_lora_config mavwrap_lora_cfg_##inst = \
+					MAVWRAP_LORA_CONFIG_INIT(inst);), \
+				())))))
 
 
 /* Get pointer to transport config */
@@ -149,7 +210,9 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 		(&mavwrap_uart_cfg_##inst), \
 		(COND_CODE_1(MAVWRAP_HAS_NETIF(inst), \
 			(&mavwrap_netif_cfg_##inst), \
-			(NULL))))
+			(COND_CODE_1(MAVWRAP_HAS_LORA(inst), \
+				(&mavwrap_lora_cfg_##inst), \
+				(NULL))))))
 
 
 /* TX thread stack (conditional) */
@@ -192,11 +255,11 @@ extern const struct mavwrap_transport_ops mavwrap_netif_ops;
 		DT_NODE_HAS_PROP(DT_DRV_INST(inst), transport), \
 		"mavlink-wrapper: 'transport' phandle is required"); \
 	BUILD_ASSERT( \
-		MAVWRAP_HAS_UART(inst) || MAVWRAP_HAS_NETIF(inst), \
+		MAVWRAP_HAS_UART(inst) || MAVWRAP_HAS_NETIF(inst) || MAVWRAP_HAS_LORA(inst), \
 		"mavlink-wrapper: unknown transport type"); \
 	BUILD_ASSERT( \
-		!(MAVWRAP_HAS_UART(inst) && MAVWRAP_HAS_NETIF(inst)), \
-		"mavlink-wrapper: set only one of serial-interface / net-interface"); \
+		(MAVWRAP_HAS_UART(inst) + MAVWRAP_HAS_NETIF(inst) + MAVWRAP_HAS_LORA(inst)) == 1, \
+		"mavlink-wrapper: set exactly one of serial-interface / net-interface / lora-interface"); \
 	BUILD_ASSERT( \
 		inst < MAVLINK_COMM_NUM_BUFFERS, \
 		"mavlink-wrapper: too many instances, exceeds MAVLINK_COMM_NUM_BUFFERS");

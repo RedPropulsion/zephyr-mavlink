@@ -272,9 +272,9 @@ static int mavwrap_uart_set_rx_callback(const struct device *dev,
 
 
 const struct mavwrap_transport_ops mavwrap_uart_ops = {
-	.init = mavwrap_uart_init,
-	.send = mavwrap_uart_send,
+	.init 			 = mavwrap_uart_init,
+	.send 			 = mavwrap_uart_send,
 	.set_rx_callback = mavwrap_uart_set_rx_callback,
-	.set_property = NULL,
-	.get_property = NULL,
+	.set_property 	 = NULL,
+	.get_property	 = NULL,
 };

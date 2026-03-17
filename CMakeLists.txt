@@ -1,3 +1,7 @@
+target_include_directories(zephyr_interface SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink/)
+
+if(CONFIG_MAVWRAP)
+
 zephyr_library()
 
 zephyr_include_directories(include)
@@ -8,8 +12,12 @@ zephyr_library_sources(
     src/mavwrap_core.c
 )
 
-zephyr_library_sources_ifdef(CONFIG_MAVWRAP_TRANSPORT_UART 
+zephyr_library_sources_ifdef(CONFIG_MAVWRAP_TRANSPORT_UART
     src/mavwrap_uart.c
+)
+
+zephyr_library_sources_ifdef(CONFIG_MAVWRAP_TRANSPORT_LORA
+    src/mavwrap_lora.c
 )
 
 zephyr_library_sources_ifdef(CONFIG_MAVWRAP_TRANSPORT_NETIF
@@ -17,4 +25,4 @@ zephyr_library_sources_ifdef(CONFIG_MAVWRAP_TRANSPORT_NETIF
     src/mavwrap_udp.c
 )
 
-target_include_directories(zephyr_interface SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/libs/mavlink/)
+endif() # CONFIG_MAVWRAP

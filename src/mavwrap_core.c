@@ -26,6 +26,7 @@ static void mavwrap_rx_thread(void *p1, void *p2, void *p3)
 	const struct mavwrap_config *config = dev->config;
 	struct mavwrap_data *data = dev->data;
 	uint8_t rx_byte = 0;
+	uint8_t last_parse_error = 0;
 
 	LOG_INF("[%s] RX thread started", dev->name);
 
@@ -50,8 +51,9 @@ static void mavwrap_rx_thread(void *p1, void *p2, void *p3)
 			}
 		}
 
-		if (data->rx_status.parse_error > 0) {
+		if (data->rx_status.parse_error != last_parse_error) {
 			atomic_inc(&data->stats.rx_errors);
+			last_parse_error = data->rx_status.parse_error;
 		}
 	}
 }

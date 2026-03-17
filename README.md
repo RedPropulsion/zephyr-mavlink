@@ -1,7 +1,7 @@
-# MAVLink Wrapper
+# zephyr-mavlink
 
-MAVLink communication wrapper module for Zephyr RTOS.
-Supports UART and UDP transports with devicetree configuration, runtime property changes, and thread-safe statistics.
+MAVLink communication module for Zephyr RTOS.
+Supports UART, UDP, and LoRa transports with devicetree configuration, runtime property changes, and thread-safe statistics.
 
 ## Installation
 
@@ -9,10 +9,10 @@ Add to your `west.yaml`:
 
 ```yaml
 projects:
-    -   name: mavlink-wrapper
-        url: https://github.com/tor1kk/mavlink-wrapper.git
+    -   name: zephyr-mavlink
+        url: https://github.com/tor1kk/zephyr-mavlink.git
         revision: main
-        path: modules/mavlink-wrapper
+        path: modules/zephyr-mavlink
         submodules: true
 ```
 
@@ -40,6 +40,14 @@ CONFIG_NET_MGMT=y
 CONFIG_NET_MGMT_EVENT=y
 CONFIG_NET_L2_ETHERNET=y
 CONFIG_NET_DHCPV4=y          # if using DHCP
+```
+
+**LoRa transport:**
+```ini
+CONFIG_MAVWRAP=y
+CONFIG_MAVWRAP_TRANSPORT_LORA=y
+CONFIG_LORA=y
+CONFIG_LORA_SX12XX=y          # or your specific driver
 ```
 
 **Both transports at the same time:**
@@ -88,6 +96,7 @@ The dialect header is included automatically by `mavwrap.h` — do not include `
 | `CONFIG_MAVWRAP_TX_THREAD_PRIORITY` | 6 | TX thread priority (1-99) |
 | `CONFIG_MAVWRAP_NETIF_CONNECT_TIMEOUT_MS` | 5000 | Network connection timeout |
 | `CONFIG_MAVWRAP_NETIF_SEND_TIMEOUT_MS` | 1000 | Network send timeout |
+| `CONFIG_MAVWRAP_LORA_TX_TIMEOUT_MS` | 5000 | LoRa TX timeout (airtime at SF12 can exceed 2s) |
 
 ### DeviceTree
 
@@ -130,6 +139,22 @@ mavlink_netif: mavlink-wrapper-netif {
 };
 ```
 
+**LoRa:**
+```dts
+mavlink_lora: mavlink-wrapper-lora {
+    compatible = "mavlink-wrapper";
+    transport = <&lora0>;
+    lora-interface;
+
+    lora-frequency = <868000000>;
+    lora-bandwidth = <125>;
+    lora-spreading-factor = <7>;
+    lora-coding-rate = <5>;
+    lora-tx-power = <14>;
+    lora-preamble-length = <8>;
+};
+```
+
 ## API
 
 ```c
@@ -149,21 +174,40 @@ mavlink_netif: mavlink-wrapper-netif {
 ### Runtime properties
 
 ```c
-/* Change remote IP at runtime */
+/* Change remote IP at runtime (UDP) */
 struct mavwrap_property_value prop = {
     .type = MAVWRAP_PROPERTY_NET_REMOTE_IP,
     .value.str = "192.168.1.200",
     .apply_immediately = true,
 };
 mavwrap_set_property(dev, &prop);
+
+/* Change LoRa frequency at runtime (e.g. manual channel change) */
+struct mavwrap_property_value prop = {
+    .type = MAVWRAP_PROPERTY_LORA_FREQUENCY,
+    .value.u32 = 915000000,
+    .apply_immediately = true,
+};
+mavwrap_set_property(dev, &prop);
+
+/* Accumulate multiple LoRa changes, apply together */
+struct mavwrap_property_value bw = {
+    .type = MAVWRAP_PROPERTY_LORA_BANDWIDTH,
+    .value.u32 = 250,
+    .apply_immediately = false,   /* just store */
+};
+struct mavwrap_property_value sf = {
+    .type = MAVWRAP_PROPERTY_LORA_DATARATE,
+    .value.u32 = 9,
+    .apply_immediately = true,    /* apply both at once */
+};
+mavwrap_set_property(dev, &bw);
+mavwrap_set_property(dev, &sf);
 ```
 
 ### TX thread (optional)
 
-When `CONFIG_MAVWRAP_TX_THREAD=y`, `mavwrap_send_message()` enqueues the packet and returns immediately. A dedicated thread handles the actual transmission. This is useful for:
-- Non-blocking sends from RX callbacks (e.g. sending ACK)
-- Slow transports (WiFi)
-- High message rates
+When `CONFIG_MAVWRAP_TX_THREAD=y`, `mavwrap_send_message()` enqueues the packet and returns immediately. A dedicated thread handles the actual transmission.  
 
 ## Usage example
 
@@ -212,7 +256,7 @@ int main(void)
     while (1) {
         mavlink_message_t hb;
         mavlink_msg_heartbeat_pack(SYS_ID, COMP_ID, &hb,
-            MAV_TYPE_GROUND_ROVER, MAV_AUTOPILOT_GENERIC,
+            MAV_TYPE_GENERIC, MAV_AUTOPILOT_GENERIC,
             armed ? MAV_MODE_FLAG_SAFETY_ARMED : 0, 0,
             armed ? MAV_STATE_ACTIVE : MAV_STATE_STANDBY);
 
