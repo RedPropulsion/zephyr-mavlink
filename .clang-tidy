@@ -6,9 +6,10 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   misc-*,
   -misc-include-cleaner,
+  -misc-header-include-cycle,
   performance-*
 
-WarningsAsErrors: ''
+WarningsAsErrors: '*'
 
 HeaderFilterRegex: '^(include|src)/.*\\.h$'
 

@@ -98,6 +98,7 @@ static void mavwrap_transport_rx_handler(const struct device *dev,
                                          size_t len,
                                          void *user_data)
 {
+	ARG_UNUSED(user_data);
 	struct mavwrap_data *data = dev->data;
 
 	if (!buf || len == 0) {
@@ -109,7 +110,7 @@ static void mavwrap_transport_rx_handler(const struct device *dev,
 	if (written < len) {
 		uint32_t dropped = len - written;
 		LOG_WRN("[%s] RX ring overflow, dropped %u bytes", dev->name, dropped);
-		atomic_add(&data->stats.rx_buff_overflow, dropped);
+		atomic_add(&data->stats.rx_buff_overflow, (atomic_val_t)dropped);
 	}
 
 	if (written > 0) {

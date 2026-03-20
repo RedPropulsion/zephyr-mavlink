@@ -41,7 +41,8 @@ jobs:
         run: |
           python3 - <<'EOF'
           import json
-          gcc_only = {'-fno-freestanding', '-fno-reorder-functions', '-fno-defer-pop'}
+          gcc_only = {'-fno-freestanding', '-fno-reorder-functions', '-fno-defer-pop',
+                      '--param=min-pagesize=0'}
           with open('build/compile_commands.json') as f:
               db = json.load(f)
           for e in db:

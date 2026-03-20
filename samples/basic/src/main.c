@@ -11,6 +11,8 @@ static void rx_cb(const struct device *dev,
 		  const mavlink_message_t *msg,
 		  void *user_data)
 {
+	ARG_UNUSED(dev);
+	ARG_UNUSED(user_data);
 	LOG_INF("RX msgid=%u sysid=%u compid=%u",
 		msg->msgid, msg->sysid, msg->compid);
 }

@@ -108,7 +108,7 @@ static void uart_irq_callback(const struct device *uart_dev, void *user_data)
 			size_t remaining = uart_data->tx_buf_len - uart_data->tx_buf_pos;
 			size_t written = uart_fifo_fill(uart_dev,
 			                                &uart_data->tx_buf[uart_data->tx_buf_pos],
-			                                remaining);
+			                                (int)remaining);
 			uart_data->tx_buf_pos += written;
 
 			/* This should never overflow - if it does, we have a serious bug */
