@@ -342,6 +342,14 @@ int mavwrap_get_property(const struct device *dev,
 
 	config = dev->config;
 
+	switch (prop->type) {
+	case MAVWRAP_PROPERTY_TRANSPORT_TYPE:
+		prop->value.u32 = (uint32_t)config->transport_type;
+		return 0;
+	default:
+		break;
+	}
+
 	if (!config->ops || !config->ops->get_property) {
 		return -ENOTSUP;
 	}

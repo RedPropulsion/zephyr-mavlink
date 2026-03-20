@@ -65,6 +65,20 @@ static void udp_recv_callback(struct net_context *context,
 
 	net_pkt_unref(pkt);
 
+	/* Capture sender address from IP/UDP headers */
+	if (ip_hdr && ip_hdr->ipv4 && proto_hdr && proto_hdr->udp) {
+		k_mutex_lock(&netif_data->config_mutex, K_FOREVER);
+		netif_data->last_rcvd_addr.sin_family = AF_INET;
+		memcpy(&netif_data->last_rcvd_addr.sin_addr,
+		       ip_hdr->ipv4->src, sizeof(netif_data->last_rcvd_addr.sin_addr));
+		netif_data->last_rcvd_addr.sin_port = proto_hdr->udp->src_port;
+		zsock_inet_ntop(AF_INET, &ip_hdr->ipv4->src,
+				netif_data->last_rcvd_ip,
+				sizeof(netif_data->last_rcvd_ip));
+		netif_data->last_rcvd_valid = true;
+		k_mutex_unlock(&netif_data->config_mutex);
+	}
+
 	/* Pass to transport layer callback (local copy avoids TOCTOU race) */
 	mavwrap_transport_rx_cb_t cb = netif_data->rx_callback;
 
@@ -300,6 +314,22 @@ static int mavwrap_udp_get_property(const struct device *dev,
 
 	case MAVWRAP_NET_PROP_LOCAL_PORT:
 		prop->value.port = netif_data->runtime_config.local_port;
+		break;
+
+	case MAVWRAP_NET_PROP_LAST_RCVD_IP:
+		if (!netif_data->last_rcvd_valid) {
+			ret = -ENODATA;
+			break;
+		}
+		prop->value.ip_str = netif_data->last_rcvd_ip;
+		break;
+
+	case MAVWRAP_NET_PROP_LAST_RCVD_PORT:
+		if (!netif_data->last_rcvd_valid) {
+			ret = -ENODATA;
+			break;
+		}
+		prop->value.port = ntohs(netif_data->last_rcvd_addr.sin_port);
 		break;
 
 	default:

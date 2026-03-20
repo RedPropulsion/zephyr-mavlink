@@ -47,7 +47,8 @@ CONFIG_NET_DHCPV4=y          # if using DHCP
 CONFIG_MAVWRAP=y
 CONFIG_MAVWRAP_TRANSPORT_LORA=y
 CONFIG_LORA=y
-CONFIG_LORA_SX12XX=y          # or your specific driver
+CONFIG_LORA_SX126X=y          # SX1261/SX1262; use CONFIG_LORA_SX127X=y for SX1272/SX1276
+CONFIG_MAVWRAP_TX_THREAD=y    # required: LoRa TX is blocking, must not run in RX thread
 ```
 
 **Both transports at the same time:**

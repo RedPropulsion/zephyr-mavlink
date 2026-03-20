@@ -67,15 +67,6 @@ struct mavwrap_transport_ops {
 	                    struct mavwrap_property_value *prop);
 };
 
-/**
- * Transport type
- */
-enum mavwrap_transport_type {
-	MAVWRAP_TRANSPORT_UART,
-	MAVWRAP_TRANSPORT_NETIF,
-	MAVWRAP_TRANSPORT_LORA,
-	MAVWRAP_TRANSPORT_UNKNOWN,
-};
 
 #ifdef CONFIG_MAVWRAP_TX_THREAD
 /**

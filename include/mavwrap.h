@@ -54,13 +54,25 @@ struct mavwrap_stats {
 };
 
 /**
+ * @brief Transport type identifier
+ */
+enum mavwrap_transport_type {
+	MAVWRAP_TRANSPORT_UART,
+	MAVWRAP_TRANSPORT_NETIF,
+	MAVWRAP_TRANSPORT_LORA,
+	MAVWRAP_TRANSPORT_UNKNOWN,
+};
+
+/**
  * @brief Property types for runtime configuration
  */
 enum mavwrap_property_type {
 	/* Network properties */
-	MAVWRAP_PROPERTY_NET_REMOTE_IP,      /**< Remote IP address (string) */
-	MAVWRAP_PROPERTY_NET_REMOTE_PORT,    /**< Remote port (uint16_t) */
-	MAVWRAP_PROPERTY_NET_LOCAL_PORT,     /**< Local port (uint16_t) */
+	MAVWRAP_PROPERTY_NET_REMOTE_IP,       /**< Remote IP address (string) */
+	MAVWRAP_PROPERTY_NET_REMOTE_PORT,     /**< Remote port (uint16_t) */
+	MAVWRAP_PROPERTY_NET_LOCAL_PORT,      /**< Local port (uint16_t) */
+	MAVWRAP_PROPERTY_NET_LAST_RCVD_IP,   /**< Read-only: IP of last received packet (string) */
+	MAVWRAP_PROPERTY_NET_LAST_RCVD_PORT, /**< Read-only: port of last received packet (uint16_t) */
 	
 	/* UART properties (future) */
 	MAVWRAP_PROPERTY_UART_BAUDRATE,      /**< UART baudrate (uint32_t) */
@@ -70,6 +82,9 @@ enum mavwrap_property_type {
 	MAVWRAP_PROPERTY_LORA_TX_POWER,      /**< TX power in dBm (uint32_t, cast to int8_t) */
 	MAVWRAP_PROPERTY_LORA_BANDWIDTH,     /**< Bandwidth in kHz: 125, 250, 500 (uint32_t) */
 	MAVWRAP_PROPERTY_LORA_DATARATE,      /**< Spreading factor 5..12 (uint32_t) */
+
+	/* Generic properties */
+	MAVWRAP_PROPERTY_TRANSPORT_TYPE,     /**< Read-only: transport type (enum mavwrap_transport_type) */
 };
 
 /**

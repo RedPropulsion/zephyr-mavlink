@@ -46,6 +46,8 @@ enum mavwrap_net_property {
 	MAVWRAP_NET_PROP_REMOTE_IP,
 	MAVWRAP_NET_PROP_REMOTE_PORT,
 	MAVWRAP_NET_PROP_LOCAL_PORT,
+	MAVWRAP_NET_PROP_LAST_RCVD_IP,    /* read-only: IP of last received packet */
+	MAVWRAP_NET_PROP_LAST_RCVD_PORT,  /* read-only: port of last received packet */
 };
 
 /**
@@ -108,6 +110,11 @@ struct mavwrap_netif_data {
 	bool dhcp_enabled;
 	bool connected;
 	atomic_t state;
+
+	/* Last received packet source (updated on every RX, protected by config_mutex) */
+	struct sockaddr_in last_rcvd_addr;
+	char last_rcvd_ip[16];  /* dotted-decimal, null-terminated */
+	bool last_rcvd_valid;
 
 	/* Synchronization */
 	struct k_mutex config_mutex;

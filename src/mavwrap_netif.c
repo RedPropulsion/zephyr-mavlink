@@ -366,6 +366,12 @@ static int mavwrap_netif_get_property(const struct device *dev,
 	case MAVWRAP_PROPERTY_NET_LOCAL_PORT:
 		net_prop.prop = MAVWRAP_NET_PROP_LOCAL_PORT;
 		break;
+	case MAVWRAP_PROPERTY_NET_LAST_RCVD_IP:
+		net_prop.prop = MAVWRAP_NET_PROP_LAST_RCVD_IP;
+		break;
+	case MAVWRAP_PROPERTY_NET_LAST_RCVD_PORT:
+		net_prop.prop = MAVWRAP_NET_PROP_LAST_RCVD_PORT;
+		break;
 	default:
 		return -EINVAL;
 	}
@@ -379,10 +385,12 @@ static int mavwrap_netif_get_property(const struct device *dev,
 	/* Convert back to generic property */
 	switch (net_prop.prop) {
 	case MAVWRAP_NET_PROP_REMOTE_IP:
+	case MAVWRAP_NET_PROP_LAST_RCVD_IP:
 		prop->value.str = net_prop.value.ip_str;
 		break;
 	case MAVWRAP_NET_PROP_REMOTE_PORT:
 	case MAVWRAP_NET_PROP_LOCAL_PORT:
+	case MAVWRAP_NET_PROP_LAST_RCVD_PORT:
 		prop->value.u16 = net_prop.value.port;
 		break;
 	}

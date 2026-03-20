@@ -131,6 +131,11 @@ static int mavwrap_lora_send(const struct device *dev,
 
 	k_mutex_lock(&lora_data->config_mutex, K_FOREVER);
 
+	/* Stop async RX before reconfiguring — lora_config returns -EBUSY otherwise */
+	if (lora_data->rx_callback) {
+		lora_recv_async(lora_data->lora_dev, NULL, NULL);
+	}
+
 	/* Switch to TX mode */
 	lora_data->runtime_cfg.tx = true;
 	ret = lora_config(lora_data->lora_dev, &lora_data->runtime_cfg);
@@ -215,6 +220,10 @@ static int mavwrap_lora_set_property(const struct device *dev,
 	}
 
 	if (prop->apply_immediately) {
+		if (lora_data->rx_callback) {
+			lora_recv_async(lora_data->lora_dev, NULL, NULL);
+		}
+		lora_data->runtime_cfg.tx = false;
 		ret = lora_config(lora_data->lora_dev, &lora_data->runtime_cfg);
 		if (ret < 0) {
 			LOG_ERR("[%s] Failed to apply LoRa config: %d", dev->name, ret);
@@ -223,6 +232,11 @@ static int mavwrap_lora_set_property(const struct device *dev,
 
 out:
 	k_mutex_unlock(&lora_data->config_mutex);
+
+	if (prop->apply_immediately && lora_data->rx_callback) {
+		lora_recv_async(lora_data->lora_dev, lora_internal_rx_cb, (void *)dev);
+	}
+
 	return ret;
 }
 
@@ -232,6 +246,9 @@ static int mavwrap_lora_get_property(const struct device *dev,
 {
 	struct mavwrap_data *data = dev->data;
 	struct mavwrap_lora_data *lora_data = data->transport_data;
+	int ret = 0;
+
+	k_mutex_lock(&lora_data->config_mutex, K_FOREVER);
 
 	switch (prop->type) {
 	case MAVWRAP_PROPERTY_LORA_FREQUENCY:
@@ -247,10 +264,12 @@ static int mavwrap_lora_get_property(const struct device *dev,
 		prop->value.u32 = (uint32_t)lora_data->runtime_cfg.datarate;
 		break;
 	default:
-		return -ENOTSUP;
+		ret = -ENOTSUP;
+		break;
 	}
 
-	return 0;
+	k_mutex_unlock(&lora_data->config_mutex);
+	return ret;
 }
 
 
