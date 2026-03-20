@@ -11,6 +11,14 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/sys/util.h>
 
+#include "mavwrap_common.h"
+#if CONFIG_MAVWRAP_TRANSPORT_UART
+#include "mavwrap_uart.h"
+#endif
+#if CONFIG_MAVWRAP_TRANSPORT_LORA
+#include "mavwrap_lora.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

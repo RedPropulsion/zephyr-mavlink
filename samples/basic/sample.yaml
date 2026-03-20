@@ -1,0 +1,10 @@
+sample:
+  name: MAVLink Wrapper Basic
+
+tests:
+  sample.mavwrap.basic:
+    build_only: true
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
+    tags: mavwrap

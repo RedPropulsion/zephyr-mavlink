@@ -1,0 +1,13 @@
+/ {
+	mavlink0: mavlink0 {
+		compatible = "mavlink-wrapper";
+		transport = <&uart1>;
+		serial-interface;
+		label = "GCS";
+	};
+};
+
+&uart1 {
+	status = "okay";
+	current-speed = <57600>;
+};

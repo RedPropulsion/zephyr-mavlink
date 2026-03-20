@@ -1,0 +1,17 @@
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  misc-*,
+  -misc-include-cleaner,
+  performance-*
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '^(include|src)/.*\\.h$'
+
+CheckOptions:
+  - key: bugprone-argument-comment.StrictMode
+    value: '0'
