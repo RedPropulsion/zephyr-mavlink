@@ -87,6 +87,10 @@ struct mavwrap_stats_atomic {
 	atomic_t rx_errors;
 	atomic_t tx_errors;
 	atomic_t rx_buff_overflow;
+#ifdef CONFIG_MAVWRAP_TRANSPORT_LORA
+	atomic_t rx_rssi;
+	atomic_t rx_snr;
+#endif
 };
 
 /**
