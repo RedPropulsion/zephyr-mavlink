@@ -67,11 +67,11 @@ static void lora_internal_rx_cb(const struct device *lora_dev,
 	const struct device *dev = user_data;
 	struct mavwrap_data *data = dev->data;
 	struct mavwrap_lora_data *lora_data = data->transport_data;
-	struct mavwrap_stats_atomic *stats = data->stats;
+	struct mavwrap_stats_atomic *stats = &data->stats;
 
 	if (len > 0 && lora_data->rx_callback) {
-		atomic_set(stats->rx_rssi, rssi);
-		atomic_set(stats->rx_snr, snr);
+		atomic_set(&stats->rx_rssi, rssi);
+		atomic_set(&stats->rx_snr, snr);
 		lora_data->rx_callback(dev, buf, len, lora_data->user_data);
 	}
 

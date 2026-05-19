@@ -140,8 +140,8 @@ static int mavwrap_init(const struct device *dev)
 	atomic_set(&data->stats.tx_errors, 0);
 	atomic_set(&data->stats.rx_buff_overflow, 0);
 #ifdef CONFIG_MAVWRAP_TRANSPORT_LORA
-	atomic_set(&data->stats.rssi, 0);
-	atomic_set(&data->stats.snr, 0);
+	atomic_set(&data->stats.rx_rssi, 0);
+	atomic_set(&data->stats.rx_snr, 0);
 #endif
 
 	memset(&data->rx_msg, 0, sizeof(data->rx_msg));
@@ -381,8 +381,8 @@ int mavwrap_get_stats(const struct device *dev,
 	stats->tx_errors = (uint32_t)atomic_get(&data->stats.tx_errors);
 	stats->rx_buff_overflow = (uint32_t)atomic_get(&data->stats.rx_buff_overflow);
 #ifdef CONFIG_MAVWRAP_TRANSPORT_LORA
-	stats->rssi = (int16_t)atomic_get(&data->stats.rssi);
-	stats->snr = (int8_t)atomic_get(&data->stats.snr);
+	stats->rx_rssi = (int16_t)atomic_get(&data->stats.rx_rssi);
+	stats->rx_snr = (int8_t)atomic_get(&data->stats.rx_snr);
 #endif
 
 	return 0;

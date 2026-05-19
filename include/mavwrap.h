@@ -52,8 +52,8 @@ struct mavwrap_stats {
 	uint32_t tx_errors;         /**< TX errors */
 	uint32_t rx_buff_overflow;  /**< RX ring buffer overflows */
 #ifdef CONFIG_MAVWRAP_TRANSPORT_LORA
-	int16_t rssi;
-	int8_t snr;
+	int16_t rx_rssi;
+	int8_t rx_snr;
 #endif
 };
 
